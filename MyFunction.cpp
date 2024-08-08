@@ -1,33 +1,30 @@
 ﻿#include "MyFunction.h"
 #include <Novice.h>
 #define _USE_MATH_DEFINES
+#include <math.h>
 #include <cassert>
-#include <cmath>
+
 
 static const int kRowHeight = 20;
 static const int kColumnWidth = 60;
 
+float cot(float x)
+{
+	return 1.0f / tanf(x);
+}
+
 MyFunction::MyFunction() {
 
+	orthographicMatrix_ = {};
 
-	rotateXMatrix_ = {};
+	perspectiveFovMatrix_ = {};
 
-	rotateYMatrix_ = {};
-
-	rotateZMatrix_ = {};
-
-	rotateXYZMatrix_ = {};
-
-	affine_ = {
-		{ 1.2f,0.79f,-2.1f },
-		{ 0.4f,1.43f,-0.8f },
-		{ 2.7f,-4.15f,1.57f }
-	};
+	viewportMatrix_ = {};
 
 }
 
-void MyFunction::MatrixScreenPrintf(int x, int y, const Matrix4x4& matrix, const char* label) {
-
+void MyFunction::MatrixScreenPrintf(int x, int y, const Matrix4x4& matrix, const char* label)
+{
 	Novice::ScreenPrintf(x, y, label);
 
 	for (int row = 0; row < 4; row++)
@@ -37,110 +34,62 @@ void MyFunction::MatrixScreenPrintf(int x, int y, const Matrix4x4& matrix, const
 			Novice::ScreenPrintf(x + column * kColumnWidth, y + row * kRowHeight + 20, "%6.02f", matrix.m[row][column]);
 		}
 	}
-
-
 }
 
-Matrix4x4 MyFunction::Multiply(const Matrix4x4& m1, const Matrix4x4& m2)
-{
-	Matrix4x4 MultiplyMatrix{};
-	for (int i = 0; i < 4; i++)
-	{
-		for (int j = 0; j < 4; j++)
-		{
-			MultiplyMatrix.m[i][j] = 0;
-			for (int k = 0; k < 4; k++)
-			{
-				MultiplyMatrix.m[i][j] += m1.m[i][k] * m2.m[k][j];
-			}
-		}
-	}
+Matrix4x4 MyFunction::MakePerspectiveFovMatrix(float fovY, float aspectRatio, float nearClip, float farClip){
 
-	return MultiplyMatrix;
-}
-
-Matrix4x4 MyFunction::MakeRotateXMatrix(float radian) {
-
-	Matrix4x4 rotateXMatrix = {
-		1.0f,0.0f,0.0f,0.0f,
-		0.0f,std::cos(radian),std::sin(radian),0.0f,
-		0.0f,-std::sin(radian),std::cos(radian),0.0f,
-		0.0f,0.0f,0.0f,1.0f
+	Matrix4x4 resultPerspectiveFov = {
+		1.0f / aspectRatio * cot(fovY / 2.0f),0.0f,0.0f,0.0f,
+		0.0f,cot(fovY / 2.0f),0.0f,0.0f,
+		0.0f,0.0f,farClip / (farClip - nearClip),1.0f,
+		0.0f,0.0f,-nearClip * farClip / (farClip - nearClip),0.0f
 
 	};
 
-	return rotateXMatrix;
-
+	return resultPerspectiveFov;
 }
 
-Matrix4x4 MyFunction::MakeRotateYMatrix(float radian) {
+Matrix4x4 MyFunction::MakeOrthographicMatrix(float left, float top, float right, float bottom, float nearClip, float farClip){
 
-	Matrix4x4 rotateYMatrix = {
-		std::cos(radian),0.0f,-std::sin(radian),0.0f,
-		0.0f,1.0f,0.0f,0.0f,
-		std::sin(radian),0.0f,std::cos(radian),0.0f,
-		0.0f,0.0f,0.0f,1.0f
+	Matrix4x4 resultOrthographic = {
+		2.0f / (right - left),0.0f,0.0f,0.0f,
+		0.0f,2.0f / (top - bottom),0.0f,0.0f,
+		0.0f,0.0f,1.0f / (farClip - nearClip),0.0f,
+		(left + right) / (left - right),(top + bottom) / (bottom - top),nearClip / (nearClip - farClip),1.0f
+
 	};
 
-	return rotateYMatrix;
-
+	return resultOrthographic;
 }
 
-Matrix4x4 MyFunction::MakeRotateZMatrix(float radian) {
+Matrix4x4 MyFunction::MakeViewportMatrix(float left, float top, float width, float height, float minDepth, float maxDepth){
 
-	Matrix4x4 rotateZMatrix = {
-		std::cos(radian),std::sin(radian),0.0f,0.0f,
-		-std::sin(radian),std::cos(radian),0.0f,0.0f,
-		0.0f,0.0f,1.0f,0.0f,
-		0.0f,0.0f,0.0f,1.0f
+	Matrix4x4 resultViewport = {
+		width / 2.0f,0.0f,0.0f,0.0f,
+		0.0f,-height / 2.0f,0.0f,0.0f,
+		0.0f,0.0f,maxDepth - minDepth,0.0f,
+		left + width / 2.0f,top + height / 2.0f,minDepth,1.0f
+
 	};
-
-	return rotateZMatrix;
-
-}
-
-Matrix4x4 MyFunction::MakeScaleMatrix(const Vector3& scale){
-
-	Matrix4x4 resultScale = {
-		scale.x,0.0f,0.0f,0.0f,
-		0.0f,scale.y,0.0f,0.0f,
-		0.0f,0.0f,scale.z,0.0f,
-		0.0f,0.0f,0.0f,1.0f
-	};
-	return resultScale;
-}
-
-Matrix4x4 MyFunction::MakeRotateMatrix(const Vector3& radian){
-
-	return Multiply(MakeRotateXMatrix(radian.x), Multiply(MakeRotateYMatrix(radian.y), MakeRotateZMatrix(radian.z)));
-
-}
-
-Matrix4x4 MyFunction::MakeTranslateMatrix(const Vector3& translate){
-
-	Matrix4x4 resultTranslate = {
-		1.0f,0.0f,0.0f,0.0f,
-		0.0f,1.0f,0.0f,0.0f,
-		0.0f,0.0f,1.0f,0.0f,
-		translate.x,translate.y,translate.z,1.0f
-	};
-	return resultTranslate;
-}
-
-Matrix4x4 MyFunction::MakeAffineMatrix(Affine affine){
-
-	return Multiply(Multiply(MakeScaleMatrix(affine.scale), MakeRotateMatrix(affine.rotate)), MakeTranslateMatrix(affine.translate));
-
+	return resultViewport;
 }
 
 void MyFunction::Update() {
 
-	worldMatrix_ = MyFunction::MakeAffineMatrix(affine_);
+	orthographicMatrix_ = MakeOrthographicMatrix(-160.f, 160.f, 200.0f, 300.0f, 0.0f,
+		1000.0f);
+	perspectiveFovMatrix_ = MakePerspectiveFovMatrix(0.63f, 1.33f, 0.1f, 1000.0f);
+
+	viewportMatrix_ = MakeViewportMatrix(100.0f, 200.0f, 600.0f, 300.0f, 0.0f, 1.0f);
 
 }
 
 void MyFunction::Draw() {
 
-	MyFunction::MatrixScreenPrintf(0, 0, worldMatrix_, "worldMatrix");
+	MatrixScreenPrintf(0, 0, orthographicMatrix_, "orthographicMatrix");
+
+	MatrixScreenPrintf(0, kRowHeight * 5, perspectiveFovMatrix_, "perspectiveFovMatrix");
+
+	MatrixScreenPrintf(0, kRowHeight * 10, viewportMatrix_, "viewportMatrix");
 
 }
