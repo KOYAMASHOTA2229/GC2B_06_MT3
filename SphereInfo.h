@@ -11,3 +11,9 @@ struct Sphere{
 	Vector3 center;
 	float radius;
 };
+
+struct Segment
+{
+	Vector3 origin;
+	Vector3 diff;
+};

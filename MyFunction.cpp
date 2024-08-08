@@ -1,13 +1,24 @@
-﻿#include "MyFunction.h"
+﻿#define  NOMINMAX
+#include "MyFunction.h"
 #include <Novice.h>
 using namespace std;
 
-float cot(float x)
+float MyFunction::cot(float x)
 {
 	return 1.0f / tanf(x);
 }
 
-float Dot(const Vector3& v1, const Vector3& v2) {
+Vector3 MyFunction::Add(const Vector3& v1, const Vector3& v2)
+{
+	return v1 + v2;
+}
+
+Vector3 MyFunction::Subtract(const Vector3& v1, const Vector3& v2)
+{
+	return v1 - v2;
+}
+
+Vector3 MyFunction::Dot(const Vector3& v1, const Vector3& v2) {
 	return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
 }
 
