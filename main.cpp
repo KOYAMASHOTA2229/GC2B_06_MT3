@@ -27,7 +27,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///
 		/// ↓更新処理ここから
 		///
-		myFunction->Update();
+		myFunction->Update(keys);
 		///
 		/// ↑更新処理ここまで
 		///
