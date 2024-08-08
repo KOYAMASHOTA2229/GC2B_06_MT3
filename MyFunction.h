@@ -6,18 +6,6 @@
 #include <cassert>
 #include "SphereInfo.h"
 
-class MyFunction {
-
-public:
-
-	MyFunction();
-
-	void TranslateMove(char* keys);
-
-	void RotateMove();
-
-	void VectorScreenPrintf(int x, int y, const Vector3& vector, const char* lebel);
-
 	Matrix4x4 Multiply(const Matrix4x4& m1, const Matrix4x4& m2);
 
 	Matrix4x4 MakeScaleMatrix(const Vector3& scale);
@@ -42,46 +30,10 @@ public:
 
 	Vector3 Transform(const Vector3& vector, const Matrix4x4& matrix);
 
-	Vector3 Cross(const Vector3& v1, const Vector3& v2);
+	Matrix4x4 MakeViewProjectionMatrix(const Matrix4x4& projectionMatrix, const Matrix4x4& viewMatrix);
 
-	void Update(char* keys);
+	void GridDraw(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix);
 
-	void Draw();
+	void DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color);
 
-private:
 
-	Matrix4x4 worldMatrix_;
-
-	Matrix4x4 cameraMatrix_;
-
-	Matrix4x4 viewMatrix_;
-
-	Matrix4x4 projectionMatrix_;
-
-	Matrix4x4 worldViewProjectionMatrix_;
-
-	Matrix4x4 viewportMatrix_;
-
-	Vector3 v1_;
-
-	Vector3 v2_;
-
-	Vector3 cross_;
-
-	Vector3 rotate_;
-
-	Vector3 translate_;
-
-	Vector3 cameraPosition_;
-
-	Vector3 ndcVertex_;
-
-	Vector3 kLocalVertices_[3];
-
-	Vector3 screenVertices_[3];
-
-	Vector3 translateSpeed_;
-
-	float rotateSpeed_;
-
-};

@@ -1,108 +1,19 @@
 ﻿#include "MyFunction.h"
 #include <Novice.h>
-
-static const int kRowHeight = 20;
-static const int kColumnWidth = 60;
-
-static const int kWindowWidth = 1280;
-static const int kWindowHeight = 720;
+using namespace std;
 
 float cot(float x)
 {
 	return 1.0f / tanf(x);
 }
 
-MyFunction::MyFunction() {
-
-	rotate_ = {};
-
-	translate_ = {};
-
-	cameraPosition_ = { 0.0f,0.5f,5.0f };
-
-	v1_ = { 1.2f,-3.9f,2.5f };
-
-	v2_ = { 2.8f,0.4f,-1.3f };
-
-	cross_ = {};
-
-	ndcVertex_ = {};
-
-	translateSpeed_ = {
-		1.0f / 50.0f,
-		0.0f,
-		1.0f / 40.0f
-	};
-
-	rotateSpeed_ = 1.0f / 30.0f;
-
-	kLocalVertices_[0] = { 0,0,0 };
-
-	kLocalVertices_[1] = { -0.5f,1,0 };
-
-	kLocalVertices_[2] = { 0.5f,1,0 };
-
-	for (uint32_t i = 0; i < 3; i++) {
-		screenVertices_[i] = {};
-	}
-
-	worldMatrix_ = {};
-
-	cameraMatrix_ = {};
-
-	viewMatrix_ = {};
-
-	projectionMatrix_ = {};
-
-	worldViewProjectionMatrix_ = {};
-
-	viewportMatrix_ = {};
-
+float Dot(const Vector3& v1, const Vector3& v2) {
+	return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
 }
 
-void MyFunction::TranslateMove(char* keys){
 
-	if (keys[DIK_D])
-	{
-		translate_.x -= translateSpeed_.x;
-	}
 
-	if (keys[DIK_A])
-	{
-		translate_.x += translateSpeed_.x;
-	}
-
-	if (keys[DIK_W]) {
-		translate_.z += translateSpeed_.z;
-	}
-
-	if (keys[DIK_S]) {
-		translate_.z -= translateSpeed_.z;
-	}
-
-	rotate_.y += rotateSpeed_;
-
-}
-
-void MyFunction::RotateMove(){
-
-	rotate_.y += rotateSpeed_;
-
-}
-
-void MyFunction::VectorScreenPrintf(int x, int y, const Vector3& vector, const char* label) {
-
-	Novice::ScreenPrintf(x, y, "%.02f", vector.x);
-
-	Novice::ScreenPrintf(x + kColumnWidth, y, "%.02f", vector.y);
-
-	Novice::ScreenPrintf(x + kColumnWidth * 2, y, "%.02f", vector.z);
-
-	Novice::ScreenPrintf(x + kColumnWidth * 3, y, "%s", label);
-
-}
-
-Matrix4x4 MyFunction::Multiply(const Matrix4x4& m1, const Matrix4x4& m2){
+Matrix4x4 Multiply(const Matrix4x4& m1, const Matrix4x4& m2){
 
 	Matrix4x4 MultiplyMatrix{};
 	for (int i = 0; i < 4; i++) {
@@ -118,7 +29,7 @@ Matrix4x4 MyFunction::Multiply(const Matrix4x4& m1, const Matrix4x4& m2){
 
 }
 
-Matrix4x4 MyFunction::MakeScaleMatrix(const Vector3& scale){
+Matrix4x4 MakeScaleMatrix(const Vector3& scale){
 
 	Matrix4x4 resultScale = {
 			scale.x,0.0f,0.0f,0.0f,
@@ -131,7 +42,7 @@ Matrix4x4 MyFunction::MakeScaleMatrix(const Vector3& scale){
 
 }
 
-Matrix4x4 MyFunction::MakeRotateXMatrix(float radian){
+Matrix4x4 MakeRotateXMatrix(float radian){
 	
 	Matrix4x4 rotateXMatrix = {
 		1.0f,0.0f,0.0f,0.0f,
@@ -144,7 +55,7 @@ Matrix4x4 MyFunction::MakeRotateXMatrix(float radian){
 
 }
 
-Matrix4x4 MyFunction::MakeRotateYMatrix(float radian){
+Matrix4x4 MakeRotateYMatrix(float radian){
 
 	Matrix4x4 rotateYMatrix = {
 		std::cos(radian),0.0f,-std::sin(radian),0.0f,
@@ -157,7 +68,7 @@ Matrix4x4 MyFunction::MakeRotateYMatrix(float radian){
 
 }
 
-Matrix4x4 MyFunction::MakeRotateZMatrix(float radian){
+Matrix4x4 MakeRotateZMatrix(float radian){
 
 	Matrix4x4 rotateZMatrix = {
 		std::cos(radian),std::sin(radian),0.0f,0.0f,
@@ -170,13 +81,13 @@ Matrix4x4 MyFunction::MakeRotateZMatrix(float radian){
 
 }
 
-Matrix4x4 MyFunction::MakeRotateMatrix(const Vector3& radian){
+Matrix4x4 MakeRotateMatrix(const Vector3& radian){
 
 	return Multiply(MakeRotateXMatrix(radian.x), Multiply(MakeRotateYMatrix(radian.y), MakeRotateZMatrix(radian.z)));
 
 }
 
-Matrix4x4 MyFunction::MakeTranslateMatrix(const Vector3& translate){
+Matrix4x4 MakeTranslateMatrix(const Vector3& translate){
 
 	Matrix4x4 resultTranslate = {
 		1.0f,0.0f,0.0f,0.0f,
@@ -189,12 +100,12 @@ Matrix4x4 MyFunction::MakeTranslateMatrix(const Vector3& translate){
 
 }
 
-Matrix4x4 MyFunction::MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate)
+Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate)
 {
 	return Multiply(Multiply(MakeScaleMatrix(scale), MakeRotateMatrix(rotate)), MakeTranslateMatrix(translate));
 }
 
-Matrix4x4 MyFunction::Inverse(const Matrix4x4& m){
+Matrix4x4 Inverse(const Matrix4x4& m){
 
 	float MatrixA = 1.0f / (m.m[0][0] * m.m[1][1] * m.m[2][2] * m.m[3][3] + m.m[0][0] * m.m[1][2] * m.m[2][3] * m.m[3][1] + m.m[0][0] * m.m[1][3] * m.m[2][1] * m.m[3][2] -
 		m.m[0][0] * m.m[1][3] * m.m[2][2] * m.m[3][1] - m.m[0][0] * m.m[1][2] * m.m[2][1] * m.m[3][3] - m.m[0][0] * m.m[1][1] * m.m[2][3] * m.m[3][2] -
@@ -250,7 +161,7 @@ Matrix4x4 MyFunction::Inverse(const Matrix4x4& m){
 
 }
 
-Matrix4x4 MyFunction::MakePerspectiveFovMatrix(float fovY, float aspectRatio, float nearClip, float farClip){
+Matrix4x4 MakePerspectiveFovMatrix(float fovY, float aspectRatio, float nearClip, float farClip){
 
 	Matrix4x4 resultPerspectiveFov = {
 		1.0f / aspectRatio * cot(fovY / 2.0f),0.0f,0.0f,0.0f,
@@ -263,7 +174,7 @@ Matrix4x4 MyFunction::MakePerspectiveFovMatrix(float fovY, float aspectRatio, fl
 
 }
 
-Matrix4x4 MyFunction::MakeViewportMatrix(float left, float top, float width, float height, float minDepth, float maxDepth){
+Matrix4x4 MakeViewportMatrix(float left, float top, float width, float height, float minDepth, float maxDepth){
 
 	Matrix4x4 resultViewport = {
 		width / 2.0f,0.0f,0.0f,0.0f,
@@ -276,7 +187,7 @@ Matrix4x4 MyFunction::MakeViewportMatrix(float left, float top, float width, flo
 
 }
 
-Vector3 MyFunction::Transform(const Vector3& vector, const Matrix4x4& matrix){
+Vector3 Transform(const Vector3& vector, const Matrix4x4& matrix){
 
 	Vector3 result;
 
@@ -297,51 +208,90 @@ Vector3 MyFunction::Transform(const Vector3& vector, const Matrix4x4& matrix){
 
 }
 
-Vector3 MyFunction::Cross(const Vector3& v1, const Vector3& v2){
-
-	Vector3 resultCross = {
-		v1.y * v2.z - v1.z * v2.y,
-		v1.z * v2.x - v1.x * v2.z,
-		v1.x * v2.y - v1.y * v2.x
-	};
-
-	return resultCross;
-
+Matrix4x4 MakeViewProjectionMatrix(const Matrix4x4& projectionMatrix, const Matrix4x4& viewMatrix)
+{
+	return Multiply(projectionMatrix, viewMatrix);
 }
 
-void MyFunction::Update(char* keys){
-	MyFunction::TranslateMove(keys);
+void GridDraw(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix){
 
-	MyFunction::RotateMove();
+	const float kGirdHalfWidth = 2.0f;
 
-	cross_ = MyFunction::Cross(v1_, v2_);
+	const uint32_t kSubdivision = 10;
 
-	worldMatrix_ = MyFunction::MakeAffineMatrix({ 1.0f,1.0f,1.0f }, rotate_, translate_);
+	const float kGirdEvery = (kGirdHalfWidth * 2.0f) / float(kSubdivision);
 
-	cameraMatrix_ = MyFunction::MakeAffineMatrix({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, cameraPosition_);
+	for (uint32_t xIndex = 0; xIndex <= kSubdivision; ++xIndex) {
 
-	viewMatrix_ = MyFunction::Inverse(cameraMatrix_);
-
-	projectionMatrix_ = MyFunction::MakePerspectiveFovMatrix(0.45f, float(kWindowWidth) / float(kWindowHeight), 0.1f, 100.0f);
-
-	worldViewProjectionMatrix_ = MyFunction::Multiply(worldMatrix_, MyFunction::Multiply(viewMatrix_, projectionMatrix_));
-
-	viewportMatrix_ = MyFunction::MakeViewportMatrix(0, 0, float(kWindowWidth), float(kWindowHeight), 0.0f, 1.0f);
-
-	for (uint32_t i = 0; i < 3; ++i) {
-		ndcVertex_ = MyFunction::Transform(kLocalVertices_[i], worldViewProjectionMatrix_);
-		screenVertices_[i] = MyFunction::Transform(ndcVertex_, viewportMatrix_);
-
+		float positionX = -kGirdHalfWidth + (xIndex * kGirdEvery);
+		
+		Vector3 start = { positionX, 0.0f, -kGirdHalfWidth };
+		Vector3 end = { positionX, 0.0f, kGirdHalfWidth };
+		Vector3 screenStart = Transform(Transform(start, viewProjectionMatrix), viewportMatrix);
+		Vector3 screenEnd = Transform(Transform(end, viewProjectionMatrix), viewportMatrix);
+		
+		Novice::DrawLine((int)screenStart.x, (int)screenStart.y, (int)screenEnd.x, (int)screenEnd.y, positionX == 0.0f ? BLACK : 0xAAAAAAFF);
 	}
+	for (uint32_t zIndex = 0; zIndex <= kSubdivision; ++zIndex) {
+
+		float positionZ = -kGirdHalfWidth + (zIndex * kGirdEvery);
+
+		Vector3 start = { -kGirdHalfWidth, 0.0f, positionZ };
+		Vector3 end = { kGirdHalfWidth, 0.0f, positionZ };
+		Vector3 screenStart = Transform(Transform(start, viewProjectionMatrix), viewportMatrix);
+		Vector3 screenEnd = Transform(Transform(end, viewProjectionMatrix), viewportMatrix);
+		
+		Novice::DrawLine((int)screenStart.x, (int)screenStart.y, (int)screenEnd.x, (int)screenEnd.y, positionZ == 0.0f ? BLACK : 0xAAAAAAFF);
+	
+	}
+
 }
 
-void MyFunction::Draw() {
+void DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color){
 
-	MyFunction::VectorScreenPrintf(0, 0, cross_, "Cross");
+	const uint32_t kSubdivision = 10; 
 
-	Novice::DrawTriangle(
-		int(screenVertices_[0].x), int(screenVertices_[0].y), int(screenVertices_[1].x), int(screenVertices_[1].y),
-		int(screenVertices_[2].x), int(screenVertices_[2].y), RED, kFillModeSolid
-	);
+	const float kLonEvery = (2.0f * float(M_PI)) / kSubdivision;
+
+	const float kLatEvery = float(M_PI) / kSubdivision; 
+
+	
+	for (uint32_t latIndex = 0; latIndex < kSubdivision; ++latIndex) {
+		float lat = -float(M_PI) / 2.0f + kLatEvery * latIndex; 
+		float nextLat = lat + kLatEvery; 
+
+		for (uint32_t lonIndex = 0; lonIndex < kSubdivision; ++lonIndex) {
+			float lon = lonIndex * kLonEvery; 
+			float nextLon = lon + kLonEvery; 
+
+			Vector3 a = {
+				sphere.center.x + sphere.radius * cosf(lat) * cosf(lon),
+				sphere.center.y + sphere.radius * sinf(lat),
+				sphere.center.z + sphere.radius * cosf(lat) * sinf(lon)
+			};
+
+			Vector3 b = {
+				sphere.center.x + sphere.radius * cosf(nextLat) * cosf(lon),
+				sphere.center.y + sphere.radius * sinf(nextLat),
+				sphere.center.z + sphere.radius * cosf(nextLat) * sinf(lon)
+			};
+
+			Vector3 c = {
+				sphere.center.x + sphere.radius * cosf(nextLat) * cosf(nextLon),
+				sphere.center.y + sphere.radius * sinf(nextLat),
+				sphere.center.z + sphere.radius * cosf(nextLat) * sinf(nextLon)
+			};
+
+			Vector3 ScreenA = Transform(Transform(a, viewProjectionMatrix), viewportMatrix);
+			Vector3 ScreenB = Transform(Transform(b, viewProjectionMatrix), viewportMatrix);
+			Vector3 ScreenC = Transform(Transform(c, viewProjectionMatrix), viewportMatrix);
+
+			Novice::DrawLine((int)ScreenA.x, (int)ScreenA.y, (int)ScreenB.x, (int)ScreenB.y, color);
+
+			Novice::DrawLine((int)ScreenB.x, (int)ScreenB.y, (int)ScreenC.x, (int)ScreenC.y, color);
+		
+		}
+	}
 
 }
+
