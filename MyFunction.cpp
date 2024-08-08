@@ -40,7 +40,7 @@ MyFunction::MyFunction() {
 }
 
 
-void MyFunction::MatrixScreenPrintf(int x, int y, Matrix4x4& matrix, const char* label) {
+void MyFunction::MatrixScreenPrintf(int x, int y,const Matrix4x4& matrix, const char* label) {
 	Novice::ScreenPrintf(x, y, label);
 	for (int row = 0; row < 4; row++)
 	{
