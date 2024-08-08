@@ -6,44 +6,21 @@
 #include <cassert>
 #include "SphereInfo.h"
 
-class MyFunction {
+Matrix4x4 Multiply(const Matrix4x4& m1, const Matrix4x4& m2);
 
-public:
+Matrix4x4 MakeScaleMatrix(const Vector3& scale);
+Matrix4x4 MakeRotateXMatrix(float radian);
+Matrix4x4 MakeRotateYMatrix(float radian);
+Matrix4x4 MakeRotateZMatrix(float radian);
+Matrix4x4 MakeRotateMatrix(const Vector3& radian);
+Matrix4x4 MakeTranslateMatrix(const Vector3& translate);
+Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate);
+Matrix4x4 Inverse(const Matrix4x4& m);
+Matrix4x4 MakePerspectiveFovMatrix(float fovY, float aspectRatio, float nearClip, float farClip);
+Matrix4x4 MakeViewportMatrix(float left, float top, float width, float height, float minDepth, float maxDepth);
 
-	static float cot(float x);
+Vector3 Transform(const Vector3& vector, const Matrix4x4& matrix);
+Matrix4x4 MakeViewProjectionMatrix(const Matrix4x4& projectionMatrix, const Matrix4x4& viewMatrix);
+void GridDraw(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix);
+void DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color);
 
-	static Vector3 Add(const Vector3& v1, const Vector3& v2);
-
-	static Vector3 Subtract(const Vector3& v1, const Vector3& v2);
-
-	static float Dot(const Vector3& v1, const Vector3& v2);
-
-	static Matrix4x4 Multiply(const Matrix4x4& m1, const Matrix4x4& m2);
-
-	static Matrix4x4 MakeScaleMatrix(const Vector3& scale);
-
-	static Matrix4x4 MakeRotateXMatrix(float radian);
-
-	static Matrix4x4 MakeRotateYMatrix(float radian);
-
-	static Matrix4x4 MakeRotateZMatrix(float radian);
-
-	static Matrix4x4 MakeRotateMatrix(const Vector3& radian);
-
-	static Matrix4x4 MakeTranslateMatrix(const Vector3& translate);
-
-	static Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate);
-
-	static Matrix4x4 Inverse(const Matrix4x4& m);
-
-	static Matrix4x4 MakePerspectiveFovMatrix(float fovY, float aspectRatio, float nearClip, float farClip);
-
-	static Matrix4x4 MakeViewportMatrix(float left, float top, float width, float height, float minDepth, float maxDepth);
-
-	static Vector3 Transform(const Vector3& vector, const Matrix4x4& matrix);
-
-	static Matrix4x4 MakeViewProjectionMatrix(const Matrix4x4& projectionMatrix, const Matrix4x4& viewMatrix);
-
-	static Vector3 ClosestPoint(const Vector3& point, const Segment& segment);
-
-};
