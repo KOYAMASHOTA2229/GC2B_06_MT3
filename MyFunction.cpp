@@ -9,7 +9,6 @@ static const int kColumnWidth = 60;
 
 MyFunction::MyFunction() {
 
-	rotate_ = { 0.4f,1.43f,-0.8f };
 
 	rotateXMatrix_ = {};
 
@@ -18,6 +17,12 @@ MyFunction::MyFunction() {
 	rotateZMatrix_ = {};
 
 	rotateXYZMatrix_ = {};
+
+	affine_ = {
+		{ 1.2f,0.79f,-2.1f },
+		{ 0.4f,1.43f,-0.8f },
+		{ 2.7f,-4.15f,1.57f }
+	};
 
 }
 
@@ -94,26 +99,48 @@ Matrix4x4 MyFunction::MakeRotateZMatrix(float radian) {
 
 }
 
+Matrix4x4 MyFunction::MakeScaleMatrix(const Vector3& scale){
+
+	Matrix4x4 resultScale = {
+		scale.x,0.0f,0.0f,0.0f,
+		0.0f,scale.y,0.0f,0.0f,
+		0.0f,0.0f,scale.z,0.0f,
+		0.0f,0.0f,0.0f,1.0f
+	};
+	return resultScale;
+}
+
+Matrix4x4 MyFunction::MakeRotateMatrix(const Vector3& radian){
+
+	return Multiply(MakeRotateXMatrix(radian.x), Multiply(MakeRotateYMatrix(radian.y), MakeRotateZMatrix(radian.z)));
+
+}
+
+Matrix4x4 MyFunction::MakeTranslateMatrix(const Vector3& translate){
+
+	Matrix4x4 resultTranslate = {
+		1.0f,0.0f,0.0f,0.0f,
+		0.0f,1.0f,0.0f,0.0f,
+		0.0f,0.0f,1.0f,0.0f,
+		translate.x,translate.y,translate.z,1.0f
+	};
+	return resultTranslate;
+}
+
+Matrix4x4 MyFunction::MakeAffineMatrix(Affine affine){
+
+	return Multiply(Multiply(MakeScaleMatrix(affine.scale), MakeRotateMatrix(affine.rotate)), MakeTranslateMatrix(affine.translate));
+
+}
+
 void MyFunction::Update() {
 
-	rotateXMatrix_ = MakeRotateXMatrix(rotate_.x);
-
-	rotateYMatrix_ = MakeRotateYMatrix(rotate_.y);
-
-	rotateZMatrix_ = MyFunction::MakeRotateZMatrix(rotate_.z);
-
-	rotateXYZMatrix_ = Multiply(rotateXMatrix_, Multiply(rotateYMatrix_, rotateZMatrix_));
+	worldMatrix_ = MyFunction::MakeAffineMatrix(affine_);
 
 }
 
 void MyFunction::Draw() {
 
-	MatrixScreenPrintf(0, 0, rotateXMatrix_, "rotateXMatrix");
-
-	MatrixScreenPrintf(0, kRowHeight * 5, rotateYMatrix_, "rotateYMatrix");
-
-	MatrixScreenPrintf(0, kRowHeight * 5 * 2, rotateZMatrix_, "rotateZMatrix");
-
-	MatrixScreenPrintf(0, kRowHeight * 5 * 3, rotateXYZMatrix_, "rotateXYZMatrix");
+	MyFunction::MatrixScreenPrintf(0, 0, worldMatrix_, "worldMatrix");
 
 }
