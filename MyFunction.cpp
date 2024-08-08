@@ -1,9 +1,5 @@
 ﻿#include "MyFunction.h"
 #include <Novice.h>
-#define _USE_MATH_DEFINES
-#include <cmath>
-#include <cassert>
-
 
 static const int kRowHeight = 20;
 static const int kColumnWidth = 60;
