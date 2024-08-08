@@ -2,7 +2,7 @@
 #include "Matrix4x4.h"
 #include "Vector3.h"
 
-class MyFunction{
+class MyFunction {
 
 public:
 
@@ -39,4 +39,3 @@ public:
 	Vector3 transformed_;
 
 };
-

@@ -7,7 +7,7 @@
 static const int kRowHeight = 20;
 static const int kColumnWidth = 60;
 
-MyFunction::MyFunction(){
+MyFunction::MyFunction() {
 
 	translate_ = { 4.1f,2.6f,0.8f };
 
@@ -31,7 +31,7 @@ MyFunction::MyFunction(){
 
 }
 
-void MyFunction::VectorScreenPrintf(int x, int y, const Vector3& vector, const char* label){
+void MyFunction::VectorScreenPrintf(int x, int y, const Vector3& vector, const char* label) {
 
 	Novice::ScreenPrintf(x, y, "%.02f", vector.x);
 
@@ -43,7 +43,7 @@ void MyFunction::VectorScreenPrintf(int x, int y, const Vector3& vector, const c
 
 }
 
-void MyFunction::MatrixScreenPrintf(int x, int y, const Matrix4x4& matrix, const char* label){
+void MyFunction::MatrixScreenPrintf(int x, int y, const Matrix4x4& matrix, const char* label) {
 
 	Novice::ScreenPrintf(x, y + 20, label);
 
@@ -71,7 +71,7 @@ Matrix4x4 MyFunction::MakeTranslateMatrix(const Vector3& translate) {
 
 }
 
-Matrix4x4 MyFunction::MakeScaleMatrix(const Vector3& scale){
+Matrix4x4 MyFunction::MakeScaleMatrix(const Vector3& scale) {
 
 	Matrix4x4 resultScale = {
 		scale.x,0.0f,0.0f,0.0f,
@@ -79,12 +79,12 @@ Matrix4x4 MyFunction::MakeScaleMatrix(const Vector3& scale){
 		0.0f,0.0f,scale.z,0.0f,
 		0.0f,0.0f,0.0f,1.0f
 	};
-	
+
 	return resultScale;
 
 }
 
-Vector3 MyFunction::Transform(const Vector3& vector, const Matrix4x4& matrix){
+Vector3 MyFunction::Transform(const Vector3& vector, const Matrix4x4& matrix) {
 
 	Vector3 result;
 
@@ -108,7 +108,7 @@ Vector3 MyFunction::Transform(const Vector3& vector, const Matrix4x4& matrix){
 
 }
 
-void MyFunction::Update(){
+void MyFunction::Update() {
 
 	translateMatrix_ = MakeTranslateMatrix(translate_);
 
@@ -118,7 +118,7 @@ void MyFunction::Update(){
 
 }
 
-void MyFunction::Draw(){
+void MyFunction::Draw() {
 
 	VectorScreenPrintf(0, 0, transformed_, "transformed");
 
