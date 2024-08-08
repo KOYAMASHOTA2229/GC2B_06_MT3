@@ -1,129 +1,119 @@
 ﻿#include "MyFunction.h"
 #include <Novice.h>
 #define _USE_MATH_DEFINES
-#include <math.h>
 #include <cassert>
+#include <cmath>
 
 static const int kRowHeight = 20;
 static const int kColumnWidth = 60;
 
 MyFunction::MyFunction() {
 
-	translate_ = { 4.1f,2.6f,0.8f };
+	rotate_ = { 0.4f,1.43f,-0.8f };
 
-	scale_ = { 1.5f,5.2f,7.3f };
+	rotateXMatrix_ = {};
 
-	translateMatrix_ = {};
+	rotateYMatrix_ = {};
 
-	scaleMatrix_ = {};
+	rotateZMatrix_ = {};
 
-	point_ = { 2.3f,3.8f,1.4f };
-
-
-	transformMatrix_ = {
-		1.0f,2.0f,3.0f,4.0f,
-		3.0f,1.0f,1.0f,2.0f,
-		1.0f,4.0f,2.0f,3.0f,
-		2.0f,2.0f,1.0f,3.0f,
-	};
-
-	transformed_ = {};
-
-}
-
-void MyFunction::VectorScreenPrintf(int x, int y, const Vector3& vector, const char* label) {
-
-	Novice::ScreenPrintf(x, y, "%.02f", vector.x);
-
-	Novice::ScreenPrintf(x + kColumnWidth, y, "%.02f", vector.y);
-
-	Novice::ScreenPrintf(x + kColumnWidth * 2, y, "%.02f", vector.z);
-
-	Novice::ScreenPrintf(x + kColumnWidth * 3, y, "%s", label);
+	rotateXYZMatrix_ = {};
 
 }
 
 void MyFunction::MatrixScreenPrintf(int x, int y, const Matrix4x4& matrix, const char* label) {
 
-	Novice::ScreenPrintf(x, y + 20, label);
+	Novice::ScreenPrintf(x, y, label);
 
 	for (int row = 0; row < 4; row++)
 	{
 		for (int column = 0; column < 4; column++)
 		{
-			Novice::ScreenPrintf(x + column * kColumnWidth, y + row * kRowHeight + 40, "%6.02f", matrix.m[row][column]);
+			Novice::ScreenPrintf(x + column * kColumnWidth, y + row * kRowHeight + 20, "%6.02f", matrix.m[row][column]);
 		}
 	}
 
 
 }
 
-Matrix4x4 MyFunction::MakeTranslateMatrix(const Vector3& translate) {
+Matrix4x4 MyFunction::Multiply(const Matrix4x4& m1, const Matrix4x4& m2)
+{
+	Matrix4x4 MultiplyMatrix{};
+	for (int i = 0; i < 4; i++)
+	{
+		for (int j = 0; j < 4; j++)
+		{
+			MultiplyMatrix.m[i][j] = 0;
+			for (int k = 0; k < 4; k++)
+			{
+				MultiplyMatrix.m[i][j] += m1.m[i][k] * m2.m[k][j];
+			}
+		}
+	}
 
-	Matrix4x4 resultTranslate = {
+	return MultiplyMatrix;
+}
+
+Matrix4x4 MyFunction::MakeRotateXMatrix(float radian) {
+
+	Matrix4x4 rotateXMatrix = {
 		1.0f,0.0f,0.0f,0.0f,
-		0.0f,1.0f,0.0f,0.0f,
-		0.0f,0.0f,1.0f,0.0f,
-		translate.x,translate.y,translate.z,1.0f
+		0.0f,std::cos(radian),std::sin(radian),0.0f,
+		0.0f,-std::sin(radian),std::cos(radian),0.0f,
+		0.0f,0.0f,0.0f,1.0f
+
 	};
 
-	return resultTranslate;
+	return rotateXMatrix;
 
 }
 
-Matrix4x4 MyFunction::MakeScaleMatrix(const Vector3& scale) {
+Matrix4x4 MyFunction::MakeRotateYMatrix(float radian) {
 
-	Matrix4x4 resultScale = {
-		scale.x,0.0f,0.0f,0.0f,
-		0.0f,scale.y,0.0f,0.0f,
-		0.0f,0.0f,scale.z,0.0f,
+	Matrix4x4 rotateYMatrix = {
+		std::cos(radian),0.0f,-std::sin(radian),0.0f,
+		0.0f,1.0f,0.0f,0.0f,
+		std::sin(radian),0.0f,std::cos(radian),0.0f,
 		0.0f,0.0f,0.0f,1.0f
 	};
 
-	return resultScale;
+	return rotateYMatrix;
 
 }
 
-Vector3 MyFunction::Transform(const Vector3& vector, const Matrix4x4& matrix) {
+Matrix4x4 MyFunction::MakeRotateZMatrix(float radian) {
 
-	Vector3 result;
+	Matrix4x4 rotateZMatrix = {
+		std::cos(radian),std::sin(radian),0.0f,0.0f,
+		-std::sin(radian),std::cos(radian),0.0f,0.0f,
+		0.0f,0.0f,1.0f,0.0f,
+		0.0f,0.0f,0.0f,1.0f
+	};
 
-	result.x = vector.x * matrix.m[0][0] + vector.y * matrix.m[1][0] + vector.z * matrix.m[2][0] + matrix.m[3][0];
-
-	result.y = vector.x * matrix.m[0][1] + vector.y * matrix.m[1][1] + vector.z * matrix.m[2][1] + matrix.m[3][1];
-
-	result.z = vector.x * matrix.m[0][2] + vector.y * matrix.m[1][2] + vector.z * matrix.m[2][2] + matrix.m[3][2];
-
-	float w = vector.x * matrix.m[0][3] + vector.y * matrix.m[1][3] + vector.z * matrix.m[2][3] + matrix.m[3][3];
-
-	assert(w != 0.0f);
-
-	result.x /= w;
-
-	result.y /= w;
-
-	result.z /= w;
-
-	return result;
+	return rotateZMatrix;
 
 }
 
 void MyFunction::Update() {
 
-	translateMatrix_ = MakeTranslateMatrix(translate_);
+	rotateXMatrix_ = MakeRotateXMatrix(rotate_.x);
 
-	scaleMatrix_ = MakeScaleMatrix(scale_);
+	rotateYMatrix_ = MakeRotateYMatrix(rotate_.y);
 
-	transformed_ = Transform(point_, transformMatrix_);
+	rotateZMatrix_ = MyFunction::MakeRotateZMatrix(rotate_.z);
+
+	rotateXYZMatrix_ = Multiply(rotateXMatrix_, Multiply(rotateYMatrix_, rotateZMatrix_));
 
 }
 
 void MyFunction::Draw() {
 
-	VectorScreenPrintf(0, 0, transformed_, "transformed");
+	MatrixScreenPrintf(0, 0, rotateXMatrix_, "rotateXMatrix");
 
-	MatrixScreenPrintf(0, 0, translateMatrix_, "translateMatrix");
+	MatrixScreenPrintf(0, kRowHeight * 5, rotateYMatrix_, "rotateYMatrix");
 
-	MatrixScreenPrintf(0, kRowHeight * 5, scaleMatrix_, "scaleMatrix");
+	MatrixScreenPrintf(0, kRowHeight * 5 * 2, rotateZMatrix_, "rotateZMatrix");
+
+	MatrixScreenPrintf(0, kRowHeight * 5 * 3, rotateXYZMatrix_, "rotateXYZMatrix");
 
 }
